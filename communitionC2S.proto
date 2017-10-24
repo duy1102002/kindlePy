@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package comC2S; 
+
+enum C2s_Type {
+    NONE = 0;
+    LOGIN = 0x1f;
+    REGISTER = 0x2f;
+    MODIPWD = 0x3f;
+    SEARCH = 0x1e;
+    PUSH = 0x2e;
+}
+
+//common head msg
+message C2s_Head {
+   uint32 signature = 1;
+   uint32 length = 2;
+   uint32 type = 3;
+   uint32 fromOuter = 4;
+   uint32 fromInner = 5;
+   uint32 to = 6;
+   uint32 portInner = 7;
+   uint32 portOuter = 8;
+}
+
+//login request msg
+message C2s_login_req {
+    C2s_Head head = 1;
+    string username = 2;
+    string nickname = 3;
+     string phonenumber = 4;
+     string email = 5;
+    string encryptedpwd = 6;
+}
+
+//register request msg
+message C2s_register_req {
+     C2s_Head head = 1;
+     string username = 2;
+     string nickname = 3;
+     string phonenumber = 4;
+     string email = 5;
+     string encryptedpwd = 6;
+}
+
+message C2s_modipwd {
+    C2s_Head head = 1;
+    uint32 id = 2;
+    string username = 3;
+    string nickname = 4;
+    string phonenumber = 5;
+    string email = 6;
+    string encryptedpwd = 7;
+}
+
+message C2s_search_req {
+    C2s_Head head = 1;
+    uint32 id = 2;
+    string bookname = 3;
+}
+
+message C2s_search_rpy {
+    C2s_Head head = 1;
+    uint32 id = 2;
+    repeated string bookpath = 3;
+}
+
+
+message C2s_push_req {
+    C2s_Head head = 1;
+    uint32 id = 2;
+    string bookpath = 3;
+}
+
+
+//reply msg 
+message C2s_common_rpy {
+    C2s_Head head = 1;
+    uint32 retcode = 2;
+    string retstr = 3;
+}
+
+
+
