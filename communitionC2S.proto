@@ -7,8 +7,13 @@ enum C2s_Type {
     LOGIN = 0x1f;
     REGISTER = 0x2f;
     MODIPWD = 0x3f;
-    SEARCH = 0x1e;
-    PUSH = 0x2e;
+    SEARCH = 0x4f;
+    PUSH = 0x5f;
+    LOGIN_REPLY = 0x1e;
+    REGISTER_REPLY = 0x2e;
+    MODIPWD_REPLY = 0x3e;
+    SEARCH_REPLY = 0x4e;
+    PUSH_REPLY = 0x5e;
 }
 
 //common head msg

@@ -93,7 +93,7 @@ def socketSend(conn):
         #msg = bytes(input(">>:"))
         if msg:
             conn.sendall(msg)
-        gevent.sleep(0)
+        gevent.sleep(1)
         #time.sleep(1)
         #data = s.recv(1024)
         #print(data)

@@ -19,7 +19,7 @@ class userInfo:
         self.username = username
         self.userid = userid
 
-class CommandGrep:
+
     
         #if isinstance()
 class CommandHead:
@@ -56,11 +56,28 @@ class CommandFactory:
         elif ctype == communitionC2S_pb2.PUSH:
             req = communitionC2S_pb2.C2s_push_req()
             print 'push'
+        elif ctype == communitionC2S_pb2.LOGIN_REPLY \
+        or ctype == communitionC2S_pb2.REGISTER_REPLY \
+        or ctype == communitionC2S_pb2.MODIPWD_REPLY \
+        or ctype == communitionC2S_pb2.SEARCH_REPLY \
+        or ctype == communitionC2S_pb2.PUSH_REPLY:
+            req = communitionC2S_pb2.C2s_common_rpy()   
         else:
             print 'error'
         req.head = CommandHead()
         print sys.getsizeof(req)
         reg.head.generateHead(sys.getsizeof(req),ctype)
+
+
+def pb_construct(msg):
+    global FROMOUTER,PORTOUTER
+    fromOuter = FROMOUTER
+    fromPortOuter = PORTOUTER
+    print fromOuter,fromPortOuter
+    if msg:
+        pb_data = msg.SerializeToString()
+        _header = struct.pack('IHIH%ds'%len(msg.__class__.__name__),FROMOUTER,PORTOUTER, len(pb_data) ,len(msg.__class__.__name__), msg.__class__.__name__) 
+        return (_header + pb_data)
 
 
  
@@ -94,7 +111,7 @@ class rsnd():
                                 #reactor.callLater(0, _func, self, _request)
                                 #print _request,type(_request),dir(_request) 
                                 #print _request.__str__(),_request.__name__(),_request.__class__()
-                                grepCommand(_request)
+                                self.grepCommand(_request)
                                 
                                 self.BUFFER = self.BUFFER[self.header_length + len_msg_name + len_pb_data:]
                                 buffer_length = len(self.BUFFER) 
@@ -111,27 +128,21 @@ class rsnd():
                     self.BUFFER = ''
                     return
 
-    def pb_construct(self,msg):
-        if msg:
-            pb_data = msg.SerializeToString()
-            _header = struct.pack(self.header_format + '%ds'%len(msg.__class__.__name__), len(pb_data), len(msg.__class__.__name__), msg.__class__.__name__)
-            #self.transport.write(_header + pb_data)
-            return (_header + pb_data)
-
     def grepCommand(self,cClass):
-            if isinstance(_request,communitionC2S_pb2.C2s_login_req):
+            if isinstance(cClass,communitionC2S_pb2.C2s_login_req):
                 loginQ.put_nowait(cClass)
-                print 'isinstance'
-            elif isinstance(_request,communitionC2S_pb2.C2s_register_req):
+                print 'isinstance loginQ'
+            elif isinstance(cClass,communitionC2S_pb2.C2s_register_req):
                 registerQ.put_nowait(cClass)
-            elif isinstance(_request,communitionC2S_pb2.C2s_modipwd):
+            elif isinstance(cClass,communitionC2S_pb2.C2s_modipwd):
                 modipwdQ.put_nowait(cClass)
-            elif isinstance(_request,communitionC2S_pb2.C2s_search_req):
+            elif isinstance(cClass,communitionC2S_pb2.C2s_search_req):
                 searchQ.put_nowait(cClass)
-            elif isinstance(_request,communitionC2S_pb2.C2s_push_req):    
+            elif isinstance(cClass,communitionC2S_pb2.C2s_push_req):    
                 pushBookQ.put_nowait(cClass)
             else:
-                print 'error msg type'    
+                print 'error msg type'  
+
 def handle_request(conn):
     try:
         while True:
@@ -142,8 +153,7 @@ def handle_request(conn):
             rsndInstance.dataReceived(data)            
             #conn.send(rsndInstance.pb_construct(data))
             if not data:
-                conn.shutdown(socket.SHUT_WR)
- 
+                conn.shutdown(socket.SHUT_WR) 
     except Exception as  ex:
         print(ex)
     finally:
@@ -165,23 +175,29 @@ def register_sys_exit_handler(greenlets):
     gevent.signal(signal.SIGTERM, process_shutdown, signal.SIGQUIT, greenlets)
     gevent.signal(signal.SIGKILL, process_shutdown, signal.SIGQUIT, greenlets)
 
-def processReq(pthread):
+def processLogin(pthread):
     while True:
+        print '#################here'
         while not loginQ.empty():
             mission = loginQ.get()
-            gevent.sleep(0)
-            print 'processReq' 
+            print 'processLogin' 
             print mission
+            originpkt = CommandFactory();
+            msg = originpkt.generateCommand(communitionC2S_pb2.LOGIN_REPLY);
+            sendQ.put_nowait(msg)
         gevent.sleep(0)
          
-def processReq(pthread):
+def handle_reply(conn):
     while True:
-        while not loginQ.empty():
-            mission = loginQ.get()
-            gevent.sleep(0)
-            print 'processReq' 
-            print mission
+        while not sendQ.empty():
+            msg = sendQ.get()
+            msg = pb_construct(msg)
+            print 'handle_reply' 
+            print msg
+            if msg:
+                conn.sendall(msg)
         gevent.sleep(0)
+
          
 
 if __name__ == '__main__':
@@ -211,6 +227,7 @@ if __name__ == '__main__':
 
  #gevent.spawn(handle_request, cli)
     tasks = [gevent.spawn(handle_request, s)
-        ,gevent.spawn(processReq, 'pthread1')]
+        ,gevent.spawn(processLogin, 'pthread1')
+        ,gevent.spawn(handle_reply,s)]
     register_sys_exit_handler(tasks)
     gevent.joinall(tasks)
