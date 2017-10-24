@@ -16,7 +16,7 @@ clientTable = dict()
 
 
 def dataReceived(conn,data):	
-	global BUFFER
+    global BUFFER
     header_format = 'IHIH'
     header_length = struct.calcsize(header_format)
     BUFFER += data
@@ -31,17 +31,13 @@ def dataReceived(conn,data):
             else:
             	connect = clientTable.get(str(out_ip)+str(out_port))
             	if connect:
+
             		connect.sendall(BUFFER[0:header_length + len_msg_name + len_pb_data])
             	else:
             		print 'not found current ip' + out_ip
                 BUFFER = BUFFER[header_length + len_msg_name + len_pb_data:]
                 buffer_length = len(BUFFER) 
                 continue
-
-                else:
-                    print( 'no such message handler. detail:', _func, hasattr(communitionC2S_pb2, msg_name), repr(BUFFER))
-
-                    return
         else:
             print( 'Un-supported message, no msg_name. detail:', len_msg_name)
             BUFFER = ''
@@ -65,18 +61,18 @@ def handle_request(conn,conn1):
         conn.close()
 
 def handle_response(conn1):
-	global clientTable
-	BUFFER = ''
+    global clientTable
+    BUFFER = ''
     try:
         while True:
             data = conn1.recv(1024)
             if not data:
                 conn1.shutdown(socket.SHUT_WR)
-            conn.sendall(data)    
+            conn1.sendall(data) 
+            print data   
                        
             #conn.send(rsndInstance.pb_construct(data))
-            if not data:
-                conn1.shutdown(socket.SHUT_WR)
+            
  
     except Exception as  ex:
         print(ex)
@@ -131,7 +127,7 @@ if __name__ == '__main__':
 
 
     #gevent.spawn(handle_request, cli)
-    tasks = [gevent.spawn(func_accept,s,cli1),gevent.spawn(handle_response,s,cli1)]
+    tasks = [gevent.spawn(func_accept,s,cli1)]
     register_sys_exit_handler(tasks)
     gevent.joinall(tasks)
 
