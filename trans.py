@@ -4,6 +4,7 @@ import time
 import gevent
 import struct
 import signal
+import bidict
 
 from gevent import socket,monkey
 from gevent.queue import Queue
@@ -12,7 +13,7 @@ from gevent.server import StreamServer
 import communitionC2S_pb2
 
 monkey.patch_all()
-clientTable = dict()
+clientTable = bidict.bidict()
 
 class rsnd():
     BUFFER = ''
@@ -38,8 +39,10 @@ class rsnd():
                             _request = getattr(communitionC2S_pb2, msg_name)()
                             if len_pb_data <= len(self.BUFFER[self.header_length + len_msg_name :]):
                                 _request.ParseFromString(self.BUFFER[self.header_length + len_msg_name : self.header_length + len_msg_name + len_pb_data])
-
-                                clientTable[str(uuid)] = socket
+                                if socket.fileno > 0:
+                                	clientTable[str(uuid)] = socket
+                                else:
+                                	del clientTable[str(uuid)]
                                 print clientTable
                                 self.BUFFER = self.BUFFER[self.header_length + len_msg_name + len_pb_data:]
                                 buffer_length = len(self.BUFFER) 
@@ -63,7 +66,7 @@ class serverToClient():
 
     def dataSend(self,data):
         global clientTable
-        print 'clientTable',dir(clientTable),clientTable
+        print 'clientTable',clientTable
         self.BUFFER += data
         buffer_length = len(self.BUFFER)
         _l = ''
@@ -85,8 +88,10 @@ class serverToClient():
                             _request.ParseFromString(self.BUFFER[self.header_length + len_msg_name : self.header_length + len_msg_name + len_pb_data])
 
                             sock = clientTable.get(str(uuid))
-                            if sock != None:
+                            if sock.fileno() > 0:
                                 sock.sendall(self.BUFFER[:self.header_length + len_msg_name : self.header_length + len_msg_name + len_pb_data])
+                            else:
+                            	del clientTable[str(uuid)]
                             self.BUFFER = self.BUFFER[self.header_length + len_msg_name + len_pb_data:]
                             buffer_length = len(self.BUFFER) 
                             continue
@@ -165,39 +170,44 @@ def process_ignore(signum, greenlets):
     """
     pass
 
-def register_sys_exit_handler(greenlets):
-    """ 
-    register signal
-    """
-    gevent.signal(signal.SIGQUIT, process_shutdown, signal.SIGQUIT, greenlets)
-    gevent.signal(signal.SIGINT, process_shutdown, signal.SIGQUIT, greenlets)
-    gevent.signal(signal.SIGTERM, process_shutdown, signal.SIGQUIT, greenlets)
-    gevent.signal(signal.SIGKILL, process_shutdown, signal.SIGQUIT, greenlets)
+#def register_sys_exit_handler(greenlets):
+#    """ 
+#    register signal
+#    """
+#    gevent.signal(signal.SIGQUIT, process_shutdown, signal.SIGQUIT, greenlets)
+#    gevent.signal(signal.SIGINT, process_shutdown, signal.SIGQUIT, greenlets)
+#    gevent.signal(signal.SIGTERM, process_shutdown, signal.SIGQUIT, greenlets)
+#   gevent.signal(signal.SIGKILL, process_shutdown, signal.SIGQUIT, greenlets)
 
 
-def from_client_to_server_accept(socket,address):
-    global LOGIC_SERVER_SOCKET
+def from_client_to_server_accept(sock,address):
+    global LOGIC_SERVER_SOCKET,clientTable
     while 1:
         try:
-            data = socket.recv(1024)            
+            data = sock.recv(1024)  
+            if not data:
+            	sock.shutdown(socket.SHUT_WR)            	
         except IOError as  ex:
             print(ex) 
-            socket.shutdown(socket.SHUT_WR)
+            del clientTable.inv[sock]
+            sock.close()
+            
+            return
 
         rsndInstance = rsnd()    
-        rsndInstance.dataReceived(data,socket) 
-        if type(LOGIC_SERVER_SOCKET) == type(socket):
+        rsndInstance.dataReceived(data,sock) 
+        if type(LOGIC_SERVER_SOCKET) == type(sock):
             LOGIC_SERVER_SOCKET.sendall(data)    
 
 
-def from_server_to_server_accept(socket,address):
+def from_server_to_server_accept(sock,address):
     global LOGIC_SERVER_SOCKET
     if LOGIC_SERVER_SOCKET == -1:
-        LOGIC_SERVER_SOCKET = socket
+        LOGIC_SERVER_SOCKET = sock
     buffer = ''
     while True:
         try:
-            data = socket.recv(1024)            
+            data = sock.recv(1024)            
         except IOError as  e:
             print(e)             
             #socket.shutdown(socket.SHUT_WR)
@@ -220,10 +230,10 @@ def register_sys_exit_handler():
     gevent.signal(signal.SIGTERM, process_shutdown, signal.SIGQUIT)
     gevent.signal(signal.SIGKILL, process_shutdown, signal.SIGQUIT)
     #print dir(signal)
-    gevent.signal(signal.SIGPIPE, process_ignore,signal.SIG_IGN)
+    #gevent.signal(signal.SIGPIPE, process_ignore,signal.SIG_IGN)
 
 if __name__ == '__main__':
-    register_sys_exit_handler()
+    #register_sys_exit_handler()
     LOGIC_SERVER_SOCKET = -1
     server_from_server = StreamServer(('127.0.0.1', 11122), from_server_to_server_accept)
     server_from_server.start()

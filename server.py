@@ -124,18 +124,7 @@ class rsnd():
             else:
                 print 'error msg type'  
 
-def handle_request(conn):
-    try:
-        while True:
-            data = conn.recv(1024)
-            if not data:
-                conn.shutdown(socket.SHUT_WR)
-            rsndInstance = rsnd()    
-            rsndInstance.dataReceived(data)            
-    except Exception as  ex:
-        print(ex)
-    finally:
-        conn.close()
+
 
 def process_shutdown(signum, greenlets):
     """
@@ -163,8 +152,26 @@ def processLogin(pthread):
             msg = originpkt.generateCommand(communitionC2S_pb2.LOGIN_REPLY,mission.head.uuid);
             sendQ.put_nowait(msg)
         gevent.sleep(0)
-         
-def handle_reply(conn):
+
+
+
+def handle_request():
+    global conn
+    try:
+        while True:
+            data = conn.recv(1024)
+            if not data:
+                conn.close()
+            rsndInstance = rsnd()    
+            rsndInstance.dataReceived(data)            
+    except Exception as  ex:
+        print(ex)
+    finally:
+        conn.close()
+
+
+def handle_reply():
+    global conn
     while True:
         while not sendQ.empty():
             msg = sendQ.get()
@@ -173,16 +180,33 @@ def handle_reply(conn):
                 conn.sendall(msg)
         gevent.sleep(0)
 
-         
+def handle_connection():
+    global conn
+    while True:        
+        try:
+            print 'check fileno'
+            result = conn.fileno()
+        except IOError as err:
+            conn.close()
+            conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try:
+                conn.connect((HOST, PORT))  
+            except socket.error as msg:
+                conn.close()
+            print 'reconnected ,please wait ...' 
+        gevent.sleep(5)     
 
 if __name__ == '__main__':
     #server(11121)
     HOST = '127.0.0.1'  #'112.126.91.52'    # The remote host
     PORT = 11122           # The same port as used by the server
 
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((HOST, PORT))
-
+    conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        conn.connect((HOST, PORT))  
+    except socket.error as msg:
+        conn.close()
+        
     recvQ = Queue()
     sendQ = Queue()
     processQ = Queue()
@@ -193,8 +217,9 @@ if __name__ == '__main__':
     pushBookQ = Queue()
 
  #gevent.spawn(handle_request, cli)
-    tasks = [gevent.spawn(handle_request, s)
+    tasks = [gevent.spawn(handle_request)
         ,gevent.spawn(processLogin, 'pthread1')
-        ,gevent.spawn(handle_reply,s)]
+        ,gevent.spawn(handle_reply)
+        ,gevent.spawn(handle_connection)]
     register_sys_exit_handler(tasks)
     gevent.joinall(tasks)
