@@ -92,7 +92,7 @@ def socketSend(conn):
 
 def socketRecv(conn):
     while True:
-        data = conn.recv(10)
+        data = conn.recv(512)
         print'!!!!!!recv:'
         gevent.sleep(0)
 

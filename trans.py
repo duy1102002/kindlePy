@@ -14,8 +14,6 @@ import communitionC2S_pb2
 monkey.patch_all()
 clientTable = dict()
 
- 
-
 class rsnd():
     BUFFER = ''
     timeOut = 500
@@ -161,6 +159,11 @@ def process_shutdown(signum, greenlets):
     """
     gevent.killall(greenlets)
 
+def process_ignore(signum, greenlets):
+    """
+    when the process recv signal, before the process exit, gevent will kill all tasks
+    """
+    pass
 
 def register_sys_exit_handler(greenlets):
     """ 
@@ -175,13 +178,15 @@ def register_sys_exit_handler(greenlets):
 def from_client_to_server_accept(socket,address):
     global LOGIC_SERVER_SOCKET
     while 1:
-        data = socket.recv(1024)
-        print type(data),dir(data)
-        if not data:
+        try:
+            data = socket.recv(1024)            
+        except IOError as  ex:
+            print(ex) 
             socket.shutdown(socket.SHUT_WR)
+
         rsndInstance = rsnd()    
         rsndInstance.dataReceived(data,socket) 
-        if type(LOGIC_SERVER_SOCKET) != type(1):
+        if type(LOGIC_SERVER_SOCKET) == type(socket):
             LOGIC_SERVER_SOCKET.sendall(data)    
 
 
@@ -191,9 +196,13 @@ def from_server_to_server_accept(socket,address):
         LOGIC_SERVER_SOCKET = socket
     buffer = ''
     while True:
-        data = socket.recv(1024)
-        if not data:
-            socket.shutdown(socket.SHUT_WR)
+        try:
+            data = socket.recv(1024)            
+        except IOError as  e:
+            print(e)             
+            #socket.shutdown(socket.SHUT_WR)
+            LOGIC_SERVER_SOCKET = -1
+
         sTcInstance = serverToClient()    
         sTcInstance.dataSend(data) 
         gevent.sleep(1)
@@ -201,15 +210,20 @@ def from_server_to_server_accept(socket,address):
 
 def handle(socket, address):
      print('new connection!')
-     soc
+
+def register_sys_exit_handler():
+    """ 
+    register signal
+    """
+    gevent.signal(signal.SIGQUIT, process_shutdown, signal.SIGQUIT)
+    gevent.signal(signal.SIGINT, process_shutdown, signal.SIGQUIT)
+    gevent.signal(signal.SIGTERM, process_shutdown, signal.SIGQUIT)
+    gevent.signal(signal.SIGKILL, process_shutdown, signal.SIGQUIT)
+    #print dir(signal)
+    gevent.signal(signal.SIGPIPE, process_ignore,signal.SIG_IGN)
 
 if __name__ == '__main__':
-    s1 = socket.socket()
-    s1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s1.bind(('0.0.0.0', 11122))
-    s1.listen(500)
-
-
+    register_sys_exit_handler()
     LOGIC_SERVER_SOCKET = -1
     server_from_server = StreamServer(('127.0.0.1', 11122), from_server_to_server_accept)
     server_from_server.start()
@@ -217,8 +231,9 @@ if __name__ == '__main__':
     server_from_client.start()
     server_from_server.serve_forever()
     server_from_client.serve_forever()
-
-
+    
+    
+    
 
 
 
