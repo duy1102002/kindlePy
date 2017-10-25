@@ -26,6 +26,7 @@ message C2s_Head {
    uint32 to = 6;
    uint32 portInner = 7;
    uint32 portOuter = 8;
+   string uuid = 9;
 }
 
 //login request msg

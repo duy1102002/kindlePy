@@ -19,27 +19,15 @@ class userInfo:
         self.username = username
         self.userid = userid
 
-
-    
-        #if isinstance()
-class CommandHead:
-    def __init__(self):
-        pass
-    def generateHead(self,length,ctype):
-        global FROMOUTER,PORTINNER,FROMINNER,HOST
-        head = communitionC2S_pb2.C2s_Head()
-        head.length = length
-        head.type = ctype
-        head.fromOuter = FROMOUTER
-        head.fromInner = PORTINNER
-        head.to = HOSTOUTER
-        head.portInner = PORTINNER
-        return head
-
 class CommandFactory:
     def __init__(self):
         pass
-    def generateCommand(self,ctype):
+    def generateHead(self,req,length,ctype,uuid):
+        req.head.length = length
+        req.head.type = ctype
+        req.head.uuid = uuid
+
+    def generateCommand(self,ctype,uuid):
         req = ''
         if ctype == communitionC2S_pb2.LOGIN:
             req = communitionC2S_pb2.C2s_login_req()            
@@ -64,19 +52,16 @@ class CommandFactory:
             req = communitionC2S_pb2.C2s_common_rpy()   
         else:
             print 'error'
-        req.head = CommandHead()
+        
         print sys.getsizeof(req)
-        reg.head.generateHead(sys.getsizeof(req),ctype)
+        self.generateHead(req,sys.getsizeof(req),ctype,uuid)
+        return req
 
 
 def pb_construct(msg):
-    global FROMOUTER,PORTOUTER
-    fromOuter = FROMOUTER
-    fromPortOuter = PORTOUTER
-    print fromOuter,fromPortOuter
     if msg:
         pb_data = msg.SerializeToString()
-        _header = struct.pack('IHIH%ds'%len(msg.__class__.__name__),FROMOUTER,PORTOUTER, len(pb_data) ,len(msg.__class__.__name__), msg.__class__.__name__) 
+        _header = struct.pack(('32sIH%ds'%len(msg.__class__.__name__)),str(msg.head.uuid), len(pb_data) ,len(msg.__class__.__name__), msg.__class__.__name__) 
         return (_header + pb_data)
 
 
@@ -85,7 +70,7 @@ def pb_construct(msg):
 class rsnd():
     BUFFER = ''
     timeOut = 500
-    header_format = 'IHIH'
+    header_format = '32sIH'
     header_length = struct.calcsize(header_format)
 
     def dataReceived(self,data):
@@ -93,24 +78,20 @@ class rsnd():
             buffer_length = len(self.BUFFER)
             _l = ''
             while (buffer_length >= self.header_length):
-                out_ip, out_port,len_pb_data, len_msg_name = struct.unpack(self.header_format, self.BUFFER[:self.header_length])#_bound.ParseFromString(self.BUFFER[:8])
-                print out_ip, out_port,len_pb_data, len_msg_name
+                uuid,len_pb_data, len_msg_name = struct.unpack(self.header_format, self.BUFFER[:self.header_length])#_bound.ParseFromString(self.BUFFER[:8])
+                print uuid,len_pb_data, len_msg_name
                 if len_msg_name:
                     if len_msg_name > len(self.BUFFER[self.header_length:]):
                         print( 'not enough buffer for msg name, wait for new data coming ...   ')
                         break
                     else:
                         msg_name = struct.unpack('%ds'% len_msg_name,  self.BUFFER[self.header_length:len_msg_name + self.header_length])[0]
-                        #_func = getattr(self.factory.service, '%s' % msg_name.lower(), None) 
-                        print '###  ' + msg_name,type(msg_name)
                         _msg =  getattr(communitionC2S_pb2, msg_name, None)
                         if _msg:
                             _request = getattr(communitionC2S_pb2, msg_name)()
                             if len_pb_data <= len(self.BUFFER[self.header_length + len_msg_name :]):
                                 _request.ParseFromString(self.BUFFER[self.header_length + len_msg_name : self.header_length + len_msg_name + len_pb_data])
-                                #reactor.callLater(0, _func, self, _request)
-                                #print _request,type(_request),dir(_request) 
-                                #print _request.__str__(),_request.__name__(),_request.__class__()
+
                                 self.grepCommand(_request)
                                 
                                 self.BUFFER = self.BUFFER[self.header_length + len_msg_name + len_pb_data:]
@@ -151,9 +132,6 @@ def handle_request(conn):
                 conn.shutdown(socket.SHUT_WR)
             rsndInstance = rsnd()    
             rsndInstance.dataReceived(data)            
-            #conn.send(rsndInstance.pb_construct(data))
-            if not data:
-                conn.shutdown(socket.SHUT_WR) 
     except Exception as  ex:
         print(ex)
     finally:
@@ -177,13 +155,12 @@ def register_sys_exit_handler(greenlets):
 
 def processLogin(pthread):
     while True:
-        print '#################here'
         while not loginQ.empty():
             mission = loginQ.get()
             print 'processLogin' 
             print mission
             originpkt = CommandFactory();
-            msg = originpkt.generateCommand(communitionC2S_pb2.LOGIN_REPLY);
+            msg = originpkt.generateCommand(communitionC2S_pb2.LOGIN_REPLY,mission.head.uuid);
             sendQ.put_nowait(msg)
         gevent.sleep(0)
          
@@ -192,8 +169,6 @@ def handle_reply(conn):
         while not sendQ.empty():
             msg = sendQ.get()
             msg = pb_construct(msg)
-            print 'handle_reply' 
-            print msg
             if msg:
                 conn.sendall(msg)
         gevent.sleep(0)
@@ -216,14 +191,6 @@ if __name__ == '__main__':
     modipwdQ = Queue()
     searchQ = Queue()
     pushBookQ = Queue()
-
-    #fake user
-    userList = dict()
-    u1 = userInfo('duyong',1)
-    userList['1'] = u1
-
-
-
 
  #gevent.spawn(handle_request, cli)
     tasks = [gevent.spawn(handle_request, s)

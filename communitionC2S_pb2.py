@@ -9,7 +9,6 @@ from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
 from google.protobuf import descriptor_pb2
-# @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
 
@@ -20,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='communitionC2S.proto',
   package='comC2S',
   syntax='proto3',
-  serialized_pb=_b('\n\x14\x63ommunitionC2S.proto\x12\x06\x63omC2S\"\x93\x01\n\x08\x43\x32s_Head\x12\x11\n\tsignature\x18\x01 \x01(\r\x12\x0e\n\x06length\x18\x02 \x01(\r\x12\x0c\n\x04type\x18\x03 \x01(\r\x12\x11\n\tfromOuter\x18\x04 \x01(\r\x12\x11\n\tfromInner\x18\x05 \x01(\r\x12\n\n\x02to\x18\x06 \x01(\r\x12\x11\n\tportInner\x18\x07 \x01(\r\x12\x11\n\tportOuter\x18\x08 \x01(\r\"\x8d\x01\n\rC2s_login_req\x12\x1e\n\x04head\x18\x01 \x01(\x0b\x32\x10.comC2S.C2s_Head\x12\x10\n\x08username\x18\x02 \x01(\t\x12\x10\n\x08nickname\x18\x03 \x01(\t\x12\x13\n\x0bphonenumber\x18\x04 \x01(\t\x12\r\n\x05\x65mail\x18\x05 \x01(\t\x12\x14\n\x0c\x65ncryptedpwd\x18\x06 \x01(\t\"\x90\x01\n\x10\x43\x32s_register_req\x12\x1e\n\x04head\x18\x01 \x01(\x0b\x32\x10.comC2S.C2s_Head\x12\x10\n\x08username\x18\x02 \x01(\t\x12\x10\n\x08nickname\x18\x03 \x01(\t\x12\x13\n\x0bphonenumber\x18\x04 \x01(\t\x12\r\n\x05\x65mail\x18\x05 \x01(\t\x12\x14\n\x0c\x65ncryptedpwd\x18\x06 \x01(\t\"\x97\x01\n\x0b\x43\x32s_modipwd\x12\x1e\n\x04head\x18\x01 \x01(\x0b\x32\x10.comC2S.C2s_Head\x12\n\n\x02id\x18\x02 \x01(\r\x12\x10\n\x08username\x18\x03 \x01(\t\x12\x10\n\x08nickname\x18\x04 \x01(\t\x12\x13\n\x0bphonenumber\x18\x05 \x01(\t\x12\r\n\x05\x65mail\x18\x06 \x01(\t\x12\x14\n\x0c\x65ncryptedpwd\x18\x07 \x01(\t\"N\n\x0e\x43\x32s_search_req\x12\x1e\n\x04head\x18\x01 \x01(\x0b\x32\x10.comC2S.C2s_Head\x12\n\n\x02id\x18\x02 \x01(\r\x12\x10\n\x08\x62ookname\x18\x03 \x01(\t\"N\n\x0e\x43\x32s_search_rpy\x12\x1e\n\x04head\x18\x01 \x01(\x0b\x32\x10.comC2S.C2s_Head\x12\n\n\x02id\x18\x02 \x01(\r\x12\x10\n\x08\x62ookpath\x18\x03 \x03(\t\"L\n\x0c\x43\x32s_push_req\x12\x1e\n\x04head\x18\x01 \x01(\x0b\x32\x10.comC2S.C2s_Head\x12\n\n\x02id\x18\x02 \x01(\r\x12\x10\n\x08\x62ookpath\x18\x03 \x01(\t\"Q\n\x0e\x43\x32s_common_rpy\x12\x1e\n\x04head\x18\x01 \x01(\x0b\x32\x10.comC2S.C2s_Head\x12\x0f\n\x07retcode\x18\x02 \x01(\r\x12\x0e\n\x06retstr\x18\x03 \x01(\t*P\n\x08\x43\x32s_Type\x12\x08\n\x04NONE\x10\x00\x12\t\n\x05LOGIN\x10\x1f\x12\x0c\n\x08REGISTER\x10/\x12\x0b\n\x07MODIPWD\x10?\x12\n\n\x06SEARCH\x10\x1e\x12\x08\n\x04PUSH\x10.b\x06proto3')
+  serialized_pb=_b('\n\x14\x63ommunitionC2S.proto\x12\x06\x63omC2S\"\xa1\x01\n\x08\x43\x32s_Head\x12\x11\n\tsignature\x18\x01 \x01(\r\x12\x0e\n\x06length\x18\x02 \x01(\r\x12\x0c\n\x04type\x18\x03 \x01(\r\x12\x11\n\tfromOuter\x18\x04 \x01(\r\x12\x11\n\tfromInner\x18\x05 \x01(\r\x12\n\n\x02to\x18\x06 \x01(\r\x12\x11\n\tportInner\x18\x07 \x01(\r\x12\x11\n\tportOuter\x18\x08 \x01(\r\x12\x0c\n\x04uuid\x18\t \x01(\t\"\x8d\x01\n\rC2s_login_req\x12\x1e\n\x04head\x18\x01 \x01(\x0b\x32\x10.comC2S.C2s_Head\x12\x10\n\x08username\x18\x02 \x01(\t\x12\x10\n\x08nickname\x18\x03 \x01(\t\x12\x13\n\x0bphonenumber\x18\x04 \x01(\t\x12\r\n\x05\x65mail\x18\x05 \x01(\t\x12\x14\n\x0c\x65ncryptedpwd\x18\x06 \x01(\t\"\x90\x01\n\x10\x43\x32s_register_req\x12\x1e\n\x04head\x18\x01 \x01(\x0b\x32\x10.comC2S.C2s_Head\x12\x10\n\x08username\x18\x02 \x01(\t\x12\x10\n\x08nickname\x18\x03 \x01(\t\x12\x13\n\x0bphonenumber\x18\x04 \x01(\t\x12\r\n\x05\x65mail\x18\x05 \x01(\t\x12\x14\n\x0c\x65ncryptedpwd\x18\x06 \x01(\t\"\x97\x01\n\x0b\x43\x32s_modipwd\x12\x1e\n\x04head\x18\x01 \x01(\x0b\x32\x10.comC2S.C2s_Head\x12\n\n\x02id\x18\x02 \x01(\r\x12\x10\n\x08username\x18\x03 \x01(\t\x12\x10\n\x08nickname\x18\x04 \x01(\t\x12\x13\n\x0bphonenumber\x18\x05 \x01(\t\x12\r\n\x05\x65mail\x18\x06 \x01(\t\x12\x14\n\x0c\x65ncryptedpwd\x18\x07 \x01(\t\"N\n\x0e\x43\x32s_search_req\x12\x1e\n\x04head\x18\x01 \x01(\x0b\x32\x10.comC2S.C2s_Head\x12\n\n\x02id\x18\x02 \x01(\r\x12\x10\n\x08\x62ookname\x18\x03 \x01(\t\"N\n\x0e\x43\x32s_search_rpy\x12\x1e\n\x04head\x18\x01 \x01(\x0b\x32\x10.comC2S.C2s_Head\x12\n\n\x02id\x18\x02 \x01(\r\x12\x10\n\x08\x62ookpath\x18\x03 \x03(\t\"L\n\x0c\x43\x32s_push_req\x12\x1e\n\x04head\x18\x01 \x01(\x0b\x32\x10.comC2S.C2s_Head\x12\n\n\x02id\x18\x02 \x01(\r\x12\x10\n\x08\x62ookpath\x18\x03 \x01(\t\"Q\n\x0e\x43\x32s_common_rpy\x12\x1e\n\x04head\x18\x01 \x01(\x0b\x32\x10.comC2S.C2s_Head\x12\x0f\n\x07retcode\x18\x02 \x01(\r\x12\x0e\n\x06retstr\x18\x03 \x01(\t*\xaa\x01\n\x08\x43\x32s_Type\x12\x08\n\x04NONE\x10\x00\x12\t\n\x05LOGIN\x10\x1f\x12\x0c\n\x08REGISTER\x10/\x12\x0b\n\x07MODIPWD\x10?\x12\n\n\x06SEARCH\x10O\x12\x08\n\x04PUSH\x10_\x12\x0f\n\x0bLOGIN_REPLY\x10\x1e\x12\x12\n\x0eREGISTER_REPLY\x10.\x12\x11\n\rMODIPWD_REPLY\x10>\x12\x10\n\x0cSEARCH_REPLY\x10N\x12\x0e\n\nPUSH_REPLY\x10^b\x06proto3')
 )
 
 _C2S_TYPE = _descriptor.EnumDescriptor(
@@ -46,18 +45,38 @@ _C2S_TYPE = _descriptor.EnumDescriptor(
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='SEARCH', index=4, number=30,
+      name='SEARCH', index=4, number=79,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='PUSH', index=5, number=46,
+      name='PUSH', index=5, number=95,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='LOGIN_REPLY', index=6, number=30,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='REGISTER_REPLY', index=7, number=46,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='MODIPWD_REPLY', index=8, number=62,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='SEARCH_REPLY', index=9, number=78,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='PUSH_REPLY', index=10, number=94,
       options=None,
       type=None),
   ],
   containing_type=None,
   options=None,
-  serialized_start=948,
-  serialized_end=1028,
+  serialized_start=963,
+  serialized_end=1133,
 )
 _sym_db.RegisterEnumDescriptor(_C2S_TYPE)
 
@@ -66,8 +85,13 @@ NONE = 0
 LOGIN = 31
 REGISTER = 47
 MODIPWD = 63
-SEARCH = 30
-PUSH = 46
+SEARCH = 79
+PUSH = 95
+LOGIN_REPLY = 30
+REGISTER_REPLY = 46
+MODIPWD_REPLY = 62
+SEARCH_REPLY = 78
+PUSH_REPLY = 94
 
 
 
@@ -134,6 +158,13 @@ _C2S_HEAD = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='uuid', full_name='comC2S.C2s_Head.uuid', index=8,
+      number=9, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -147,7 +178,7 @@ _C2S_HEAD = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=33,
-  serialized_end=180,
+  serialized_end=194,
 )
 
 
@@ -212,8 +243,8 @@ _C2S_LOGIN_REQ = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=183,
-  serialized_end=324,
+  serialized_start=197,
+  serialized_end=338,
 )
 
 
@@ -278,8 +309,8 @@ _C2S_REGISTER_REQ = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=327,
-  serialized_end=471,
+  serialized_start=341,
+  serialized_end=485,
 )
 
 
@@ -351,8 +382,8 @@ _C2S_MODIPWD = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=474,
-  serialized_end=625,
+  serialized_start=488,
+  serialized_end=639,
 )
 
 
@@ -396,8 +427,8 @@ _C2S_SEARCH_REQ = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=627,
-  serialized_end=705,
+  serialized_start=641,
+  serialized_end=719,
 )
 
 
@@ -441,8 +472,8 @@ _C2S_SEARCH_RPY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=707,
-  serialized_end=785,
+  serialized_start=721,
+  serialized_end=799,
 )
 
 
@@ -486,8 +517,8 @@ _C2S_PUSH_REQ = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=787,
-  serialized_end=863,
+  serialized_start=801,
+  serialized_end=877,
 )
 
 
@@ -531,8 +562,8 @@ _C2S_COMMON_RPY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=865,
-  serialized_end=946,
+  serialized_start=879,
+  serialized_end=960,
 )
 
 _C2S_LOGIN_REQ.fields_by_name['head'].message_type = _C2S_HEAD
