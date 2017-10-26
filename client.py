@@ -170,7 +170,7 @@ def socketRecv(conn):
     rsndInstance = rsnd()
     while True:
         print 'receive'
-        data = conn.recv(128)            
+        data = conn.recv(2048)            
         rsndInstance.dataReceived(data)   
         gevent.sleep(0)
 
@@ -194,7 +194,7 @@ def createFind():
     msg = originpkt.generateCommand(communitionC2S_pb2.SEARCH);
     msg.bookname = bookname
     commandQ.put_nowait(msg)
-    gevent.sleep(1)
+    gevent.sleep(0)
 
 def createPush():
     print 'please input bookPath:'
@@ -214,7 +214,7 @@ def stepChange():
             createFind()
         else:
             pass
-        gevent.sleep(0)
+        gevent.sleep(3)
 
 
 if __name__ == '__main__':

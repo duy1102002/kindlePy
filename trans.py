@@ -183,6 +183,7 @@ def process_ignore(signum, greenlets):
 
 def from_client_to_server_accept(sock,address):
     global LOGIC_SERVER_SOCKET,clientTable
+    rsndInstance = rsnd()
     while 1:
         try:
             data = sock.recv(1024)  
@@ -195,7 +196,6 @@ def from_client_to_server_accept(sock,address):
             
             return
 
-        rsndInstance = rsnd()    
         rsndInstance.dataReceived(data,sock) 
         if type(LOGIC_SERVER_SOCKET) == type(sock):
             LOGIC_SERVER_SOCKET.sendall(data)    
