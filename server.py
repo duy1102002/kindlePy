@@ -5,7 +5,7 @@ import gevent
 import struct
 import signal
 import urllib2
-
+import json
 from gevent import socket,monkey
 from gevent.queue import Queue
 
@@ -163,10 +163,15 @@ def processSearch(pthread):
             mission = searchQ.get()
             print 'processLogin' 
             print mission
-            cmd = 'http://192.168.123.31:8081/find?{search:\"' + mission.bookname + '\"}'
-            httpGet(cmd)
+            cmd = 'http://192.168.2.236:8081/find?{"search":\"' + mission.bookname + '\"}'
+            res = httpGet(cmd)
             originpkt = CommandFactory();
             msg = originpkt.generateCommand(communitionC2S_pb2.SEARCH_REPLY,mission.head.uuid);
+            for bookname in res:
+                if bookname:
+                    msg.bookpath.append(bookname)
+                    print bookname
+                    
             sendQ.put_nowait(msg)
         gevent.sleep(0)
 
@@ -213,9 +218,20 @@ def handle_connection():
 
 def httpGet(url):
     print('GET: %s' % url)
-    resp = urllib2.urlopen(url)
-    data = resp.read()
-    print('%d bytes received from %s.' % (len(data), url))
+    resultList = []
+    try:
+        resp = urllib2.urlopen(url)
+        data = resp.read()
+        print('%d bytes received from %s.' % (len(data), url))
+        print data
+        result = json.loads(data)
+        print result
+        if result.get('result'):
+            resultList = result['result']
+    except Exception as e:
+        print e
+    return resultList
+        
 
 if __name__ == '__main__':
     #server(11121)

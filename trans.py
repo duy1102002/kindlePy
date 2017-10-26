@@ -16,10 +16,11 @@ monkey.patch_all()
 clientTable = bidict.bidict()
 
 class rsnd():
-    BUFFER = ''
-    timeOut = 500
-    header_format = '32sIH'
-    header_length = struct.calcsize(header_format)
+    def __init__(self):
+            self.BUFFER = ''
+            self.timeOut = 500
+            self.header_format = '32sIH'
+            self.header_length = struct.calcsize(self.header_format)
 
     def dataReceived(self,data,socket):
             self.BUFFER += data
@@ -47,8 +48,8 @@ class rsnd():
                                 self.BUFFER = self.BUFFER[self.header_length + len_msg_name + len_pb_data:]
                                 buffer_length = len(self.BUFFER) 
                                 continue
-                            else:   
-                                print( 'not enough buffer for pb_data, waiting for new data coming ... ')
+                            else:
+                                print 'not enough buffer for pb_data, waiting for new data coming ... ',len(self.BUFFER)   
                                 break
                         else:
                             print( 'no such message handler. detail:', hasattr(communitionC2S_pb2, msg_name), repr(self.BUFFER))
@@ -96,7 +97,7 @@ class serverToClient():
                             buffer_length = len(self.BUFFER) 
                             continue
                         else:   
-                            print( 'not enough buffer for pb_data, waiting for new data coming ... ')
+                            print 'SEND not enough buffer for pb_data, waiting for new data coming ... ',len(self.BUFFER)
                             break
                     else:
                         print( 'no such message handler. detail:', hasattr(communitionC2S_pb2, msg_name), repr(self.BUFFER))
@@ -110,7 +111,7 @@ class serverToClient():
 def handle_request(conn):
     try:
         while True:
-            data = conn.recv(1024)
+            data = conn.recv(8192)
             if not data:
                 conn.shutdown(socket.SHUT_WR)
             rsndInstance = rsnd()    
@@ -201,22 +202,34 @@ def from_client_to_server_accept(sock,address):
 
 
 def from_server_to_server_accept(sock,address):
+
     global LOGIC_SERVER_SOCKET
+
     if LOGIC_SERVER_SOCKET == -1:
+
         LOGIC_SERVER_SOCKET = sock
+
     buffer = ''
+
+    sTcInstance = serverToClient()
+
     while True:
+
         try:
+
             data = sock.recv(1024)            
+
         except IOError as  e:
+
             print(e)             
+
             #socket.shutdown(socket.SHUT_WR)
-            LOGIC_SERVER_SOCKET = -1
 
-        sTcInstance = serverToClient()    
+            LOGIC_SERVER_SOCKET = -1   
+
         sTcInstance.dataSend(data) 
-        gevent.sleep(1)
 
+        gevent.sleep(1)
 
 def handle(socket, address):
      print('new connection!')
