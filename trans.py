@@ -89,7 +89,7 @@ class serverToClient():
 
                             sock = clientTable.get(str(uuid))
                             if sock.fileno() > 0:
-                                sock.sendall(self.BUFFER[:self.header_length + len_msg_name : self.header_length + len_msg_name + len_pb_data])
+                                sock.sendall(self.BUFFER[:self.header_length + len_msg_name + len_pb_data])
                             else:
                             	del clientTable[str(uuid)]
                             self.BUFFER = self.BUFFER[self.header_length + len_msg_name + len_pb_data:]

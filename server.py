@@ -4,7 +4,7 @@ import time
 import gevent
 import struct
 import signal
-
+import urllib2
 
 from gevent import socket,monkey
 from gevent.queue import Queue
@@ -47,9 +47,10 @@ class CommandFactory:
         elif ctype == communitionC2S_pb2.LOGIN_REPLY \
         or ctype == communitionC2S_pb2.REGISTER_REPLY \
         or ctype == communitionC2S_pb2.MODIPWD_REPLY \
-        or ctype == communitionC2S_pb2.SEARCH_REPLY \
         or ctype == communitionC2S_pb2.PUSH_REPLY:
-            req = communitionC2S_pb2.C2s_common_rpy()   
+            req = communitionC2S_pb2.C2s_common_rpy() 
+        elif ctype == communitionC2S_pb2.SEARCH_REPLY:
+            req = communitionC2S_pb2.C2s_search_rpy()
         else:
             print 'error'
         
@@ -62,6 +63,7 @@ def pb_construct(msg):
     if msg:
         pb_data = msg.SerializeToString()
         _header = struct.pack(('32sIH%ds'%len(msg.__class__.__name__)),str(msg.head.uuid), len(pb_data) ,len(msg.__class__.__name__), msg.__class__.__name__) 
+        print 'mark:',str(msg.head.uuid), len(pb_data) ,len(msg.__class__.__name__)
         return (_header + pb_data)
 
 
@@ -146,14 +148,27 @@ def processLogin(pthread):
     while True:
         while not loginQ.empty():
             mission = loginQ.get()
+
             print 'processLogin' 
             print mission
+
             originpkt = CommandFactory();
             msg = originpkt.generateCommand(communitionC2S_pb2.LOGIN_REPLY,mission.head.uuid);
             sendQ.put_nowait(msg)
         gevent.sleep(0)
 
-
+def processSearch(pthread):
+    while True:
+        while not searchQ.empty():
+            mission = searchQ.get()
+            print 'processLogin' 
+            print mission
+            cmd = 'http://192.168.123.31:8081/find?{search:\"' + mission.bookname + '\"}'
+            httpGet(cmd)
+            originpkt = CommandFactory();
+            msg = originpkt.generateCommand(communitionC2S_pb2.SEARCH_REPLY,mission.head.uuid);
+            sendQ.put_nowait(msg)
+        gevent.sleep(0)
 
 def handle_request():
     global conn
@@ -194,7 +209,13 @@ def handle_connection():
             except socket.error as msg:
                 conn.close()
             print 'reconnected ,please wait ...' 
-        gevent.sleep(5)     
+        gevent.sleep(5) 
+
+def httpGet(url):
+    print('GET: %s' % url)
+    resp = urllib2.urlopen(url)
+    data = resp.read()
+    print('%d bytes received from %s.' % (len(data), url))
 
 if __name__ == '__main__':
     #server(11121)
@@ -219,6 +240,7 @@ if __name__ == '__main__':
  #gevent.spawn(handle_request, cli)
     tasks = [gevent.spawn(handle_request)
         ,gevent.spawn(processLogin, 'pthread1')
+        ,gevent.spawn(processSearch, 'pthread2')
         ,gevent.spawn(handle_reply)
         ,gevent.spawn(handle_connection)]
     register_sys_exit_handler(tasks)
