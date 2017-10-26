@@ -177,12 +177,12 @@ def processSearch(pthread):
 
 def handle_request():
     global conn
+    rsndInstance = rsnd()
     try:
         while True:
             data = conn.recv(1024)
             if not data:
-                conn.close()
-            rsndInstance = rsnd()    
+                conn.close()    
             rsndInstance.dataReceived(data)            
     except Exception as  ex:
         print(ex)

@@ -107,7 +107,7 @@ class rsnd():
                                 buffer_length = len(self.BUFFER) 
                                 continue
                             else:   
-                                print( 'not enough buffer for pb_data, waiting for new data coming ... ')
+                                print 'not enough buffer for pb_data, waiting for new data coming ... ',len(self.BUFFER)
                                 break
                         else:
                             print( 'no such message handler. detail:', hasattr(communitionC2S_pb2, msg_name), repr(self.BUFFER))
